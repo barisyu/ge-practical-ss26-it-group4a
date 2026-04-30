@@ -16,7 +16,7 @@
 ---
 
 ________________________________________
-Carla And Yolov Eight Integration Lab Report Group Four A Ss Twenty Six
+CARLA & YOLOv8 Integration Lab Report - Group 4a (SS26)
 
 -Introduction
 
