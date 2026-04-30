@@ -2,16 +2,16 @@
 
 ## Project Information
 
-- **Practical Course:** [Title of the course]
+- **Practical Course:** General Enginnering Practicum 
 - **Lab name:** Informatik v50
 - **Date:** 27.04.2026
 - **Group Members:**  
   - Baris Yaksi
-  - [Name 2]  
-  - [Name 3]
-  - [Name 4]
-  - [Name 5]
-- **Instructors:** [Names of the instructors]
+  - Sofia Atti  
+  - Qiye Jiang
+  - Ze Xen Choong
+  - Zohreh Farhadi
+- Instructors: Prof. Rasche & J. Schweizer B.Sc.
 
 ---
 
