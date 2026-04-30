@@ -19,6 +19,7 @@ ________________________________________
 Carla And Yolov Eight Integration Lab Report Group Four A Ss Twenty Six
 
 -Introduction
+
 This project aimed to connect a simulated self-driving setup with instant image analysis. Through the CARLA platform, a flow of data was built to capture video output from a driver-guided vehicle. That feed then moved into a YOLOv8 model for immediate object detection. Instead of relying on pre-recorded footage, live visuals were tapped directly during operation. With synchronization maintained, the system responded as decisions unfolded in the virtual world. Processing happened frame by frame without delay. While simulation ran continuously, vision tasks kept pace using optimized inference timing. Such integration allowed dynamic responses based on what the camera saw. Not limited to static tests, the method adapted mid-drive. Because inputs changed constantly, outputs reflected real moments in the scenario.
 Through real-time tracking - spotting cars, people - we pushed past basic photo analysis while keeping the simulation interface smooth. This step showed how self-driving tech can sense surroundings dynamically, opening paths toward automatic reactions such as sudden stops or crash prevention.
 Setup and Tools
@@ -37,6 +38,7 @@ Using pathlib improved flexibility in handling file paths across different opera
 For external models, the lightweight yolov8n.pt (Nano) was chosen because it supports faster processing when used at the same time as the demanding CARLA 3D simulation. Though small in size, this version keeps performance stable under load. Its efficiency helps avoid lag during real-time operation. Since speed matters in dynamic environments, using a streamlined network makes sense. The trade-off between accuracy and response time favors responsiveness here. Thus, integration runs more smoothly without sacrificing essential detection capabilities.
 
 -Exercise Summary
+
 Multi phase integration approach
 1. Starting at localhost:2000, the initial link was confirmed. Town01 appeared next, brought in through notebook commands. A Tesla Model 3 came into view afterward, placed by spawn functions. Weather shifted later - adjusted manually - to HardRainNight conditions. Each step followed sequentially, driven by script inputs. Environment tweaks happened one after another, without overlap.
 2. Using only basic vision tools, the Pygame display output was separated cleanly from YOLO processing. A three-dimensional pixel grid from Pygame became compatible with OpenCV through format translation. That transformed data then moved into YOLO for analysis. Detection results appeared as outlined regions on still frames along with moving footage. Each stage operated without interference once split apart.
@@ -53,16 +55,19 @@ Image handling varies between Pygame and OpenCV - one orders dimensions by width
 Pushing to GitHub failed when remote updates caused a conflict. Caught inside Vim after a git pull started an automatic merge prompt. The team stopped the hanging operation using git merge --abort. A smoother path emerged by applying the --no-edit option. This allowed the merge and upload to finish without manual input.
 
 -Conclusion
+
 This project connected common Python artificial intelligence libraries to a detailed three-dimensional simulation environment. Through precise control of the rendering cycle, real-time third-person object monitoring was made possible while keeping the CARLA interface responsive and efficient.
 Later upgrades include performance checks. Instead of the Nano version, using YOLOv8 Small (yolov8s.pt) helps track how much speed is lost when accuracy improves. Each test will show frame rate changes alongside detection quality.
 Starting with object location data, researchers aim to calculate spacing from the self-driving car to surrounding items by pulling boundary frame positions. This measurement process forms a base layer when designing systems that trigger sudden stops automatically. Getting these spatial figures right matters early on in development work focused on safety-driven responses.
 
 -Appendix
+
 Place yolov8n.pt inside the /model/ folder when running manual_control.py. That file needs to sit one level below the script. Its position matters for correct access later on. The path relies on this setup working properly. Running from another location may cause errors. Adjust placement only if directory links change. Location determines whether loading succeeds.
 A picture of your simulator in action could go right here - just drag it into the GitHub readme window if you feel like including one.
 
 -References
+
 Ultralytics Docs YOLOv8 Python Use
 CARLA Simulator Python API Documentation
 GE Practical SS26 IT Module Exercise 4 Guidelines Lab PDF
-Humanize
+
