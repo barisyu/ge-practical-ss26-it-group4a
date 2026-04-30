@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 # Copyright (c) 2017 Computer Vision Center (CVC) at the Universitat Autonoma de
@@ -6,9 +5,6 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
-
-# Allows controlling a vehicle with a keyboard. For a simpler and more
-# documented example, please take a look at tutorial.py.
 
 """
 Welcome to CARLA manual control.
@@ -24,7 +20,7 @@ Use ARROWS or WASD keys for control.
     M            : toggle manual transmission
     ,/.          : gear up/down
 
-    TAB          : change sensor position
+    TAB          : change sensor position (1st vs 3rd Person)
     `            : next sensor
     [1-9]        : change to sensor [1-9]
     C            : change weather (Shift+C reverse)
@@ -45,7 +41,6 @@ sys.argv = ['']
 # -- find carla module ---------------------------------------------------------
 # ==============================================================================
 
-
 import glob
 import os
 import sys
@@ -58,14 +53,11 @@ try:
 except IndexError:
     pass
 
-
 # ==============================================================================
 # -- imports -------------------------------------------------------------------
 # ==============================================================================
 
-
 import carla
-
 from carla import ColorConverter as cc
 
 import argparse
@@ -116,9 +108,23 @@ except ImportError:
 
 
 # ==============================================================================
-# -- Global functions ----------------------------------------------------------
+# -- EXERCISE 4: YOLO + OpenCV Setup -------------------------------------------
 # ==============================================================================
 
+import cv2
+from ultralytics import YOLO
+from pathlib import Path
+
+# Use __file__ so the code works on BOTH your PC and the Lab PC automatically
+base_path = Path(__file__).resolve()
+model_path = base_path.parent / "model" / "yolov8n.pt"
+
+# Load the model globally so it only loads once when the script starts
+model = YOLO(str(model_path))
+
+# ==============================================================================
+# -- Global functions ----------------------------------------------------------
+# ==============================================================================
 
 def find_weather_presets():
     rgx = re.compile('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)')
@@ -131,11 +137,9 @@ def get_actor_display_name(actor, truncate=250):
     name = ' '.join(actor.type_id.replace('_', '.').title().split('.')[1:])
     return (name[:truncate-1] + u'\u2026') if len(name) > truncate else name
 
-
 # ==============================================================================
 # -- World ---------------------------------------------------------------------
 # ==============================================================================
-
 
 class World(object):
     def __init__(self, carla_world, hud, actor_filter):
@@ -151,24 +155,20 @@ class World(object):
         self._actor_filter = actor_filter
         self.restart()
         self.world.on_tick(hud.on_world_tick)
-        # Initialize map_name       
         if self.world is not None:
             self.map_name = self.world.get_map().name
-            print("Map name initialized:", self.map_name)  # Debugging line
+            print("Map name initialized:", self.map_name)
         else:
             print("Warning: self.world is None, cannot set map_name.")
 
     def restart(self):
-        # Keep same camera config if the camera manager exists.
         cam_index = self.camera_manager._index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager._transform_index if self.camera_manager is not None else 0
-        # Get a random blueprint.
         blueprint = random.choice(self.world.get_blueprint_library().filter(self._actor_filter))
         blueprint.set_attribute('role_name', 'hero')
         if blueprint.has_attribute('color'):
             color = random.choice(blueprint.get_attribute('color').recommended_values)
             blueprint.set_attribute('color', color)
-        # Spawn the player.
         if self.player is not None:
             spawn_point = self.player.get_transform()
             spawn_point.location.z += 2.0
@@ -180,7 +180,6 @@ class World(object):
             spawn_points = self.world.get_map().get_spawn_points()
             spawn_point = random.choice(spawn_points) if spawn_points else carla.Transform()
             self.player = self.world.try_spawn_actor(blueprint, spawn_point)
-        # Set up the sensors.
         self.collision_sensor = CollisionSensor(self.player, self.hud)
         self.lane_invasion_sensor = LaneInvasionSensor(self.player, self.hud)
         self.gnss_sensor = GnssSensor(self.player)
@@ -200,10 +199,6 @@ class World(object):
     def tick(self, clock):
         self.hud.tick(self, clock)
 
-    def render(self, display):
-        self.camera_manager.render(display)
-        self.hud.render(display)
-
     def destroy(self):
         actors = [
             self.camera_manager.sensor,
@@ -215,11 +210,9 @@ class World(object):
             if actor is not None:
                 actor.destroy()
 
-
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
 # ==============================================================================
-
 
 class KeyboardControl(object):
     def __init__(self, world, start_in_autopilot):
@@ -318,11 +311,9 @@ class KeyboardControl(object):
     def _is_quit_shortcut(key):
         return (key == K_ESCAPE) or (key == K_q and pygame.key.get_mods() & KMOD_CTRL)
 
-
 # ==============================================================================
 # -- HUD -----------------------------------------------------------------------
 # ==============================================================================
-
 
 class HUD(object):
     def __init__(self, width, height):
@@ -369,7 +360,6 @@ class HUD(object):
             'Client:  % 16.0f FPS' % clock.get_fps(),
             '',
             'Vehicle: % 20s' % get_actor_display_name(world.player, truncate=20),
-            #'Map:     % 20s' % world.world.map_name,
             'Simulation time: % 12s' % datetime.timedelta(seconds=int(self.simulation_time)),
             '',
             'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
@@ -447,18 +437,12 @@ class HUD(object):
                             rect = pygame.Rect((bar_h_offset, v_offset + 8), (f * bar_width, 6))
                         pygame.draw.rect(display, (255, 255, 255), rect)
                     item = item[0]
-                if item: # At this point has to be a str.
+                if item:
                     surface = self._font_mono.render(item, True, (255, 255, 255))
                     display.blit(surface, (8, v_offset))
                 v_offset += 18
         self._notifications.render(display)
         self.help.render(display)
-
-
-# ==============================================================================
-# -- FadingText ----------------------------------------------------------------
-# ==============================================================================
-
 
 class FadingText(object):
     def __init__(self, font, dim, pos):
@@ -483,12 +467,6 @@ class FadingText(object):
     def render(self, display):
         display.blit(self.surface, self.pos)
 
-
-# ==============================================================================
-# -- HelpText ------------------------------------------------------------------
-# ==============================================================================
-
-
 class HelpText(object):
     def __init__(self, font, width, height):
         lines = __doc__.split('\n')
@@ -511,12 +489,6 @@ class HelpText(object):
         if self._render:
             display.blit(self.surface, self.pos)
 
-
-# ==============================================================================
-# -- CollisionSensor -----------------------------------------------------------
-# ==============================================================================
-
-
 class CollisionSensor(object):
     def __init__(self, parent_actor, hud):
         self.sensor = None
@@ -526,8 +498,6 @@ class CollisionSensor(object):
         world = self._parent.get_world()
         bp = world.get_blueprint_library().find('sensor.other.collision')
         self.sensor = world.spawn_actor(bp, carla.Transform(), attach_to=self._parent)
-        # We need to pass the lambda a weak reference to self to avoid circular
-        # reference.
         weak_self = weakref.ref(self)
         self.sensor.listen(lambda event: CollisionSensor._on_collision(weak_self, event))
 
@@ -550,24 +520,14 @@ class CollisionSensor(object):
         if len(self._history) > 4000:
             self._history.pop(0)
 
-
-# ==============================================================================
-# -- LaneInvasionSensor --------------------------------------------------------
-# ==============================================================================
-
-
 class LaneInvasionSensor(object):
     def __init__(self, parent_actor, hud):
         self.sensor = None
         self._parent = parent_actor
         self._hud = hud
         world = self._parent.get_world()
-        #bp = world.get_blueprint_library().find('sensor.other.lane_detector')
-        #self.sensor = world.spawn_actor(bp, carla.Transform(), attach_to=self._parent)
         bp = world.get_blueprint_library().find('sensor.other.lane_invasion')
         self.sensor = world.spawn_actor(bp, carla.Transform(), attach_to=self._parent)
-        # We need to pass the lambda a weak reference to self to avoid circular
-        # reference.
         weak_self = weakref.ref(self)
         self.sensor.listen(lambda event: LaneInvasionSensor._on_invasion(weak_self, event))
 
@@ -579,11 +539,6 @@ class LaneInvasionSensor(object):
         text = ['%r' % str(x).split()[-1] for x in set(event.crossed_lane_markings)]
         self._hud.notification('Crossed line %s' % ' and '.join(text))
 
-# ==============================================================================
-# -- GnssSensor --------------------------------------------------------
-# ==============================================================================
-
-
 class GnssSensor(object):
     def __init__(self, parent_actor):
         self.sensor = None
@@ -593,8 +548,6 @@ class GnssSensor(object):
         world = self._parent.get_world()
         bp = world.get_blueprint_library().find('sensor.other.gnss')
         self.sensor = world.spawn_actor(bp, carla.Transform(carla.Location(x=1.0, z=2.8)), attach_to=self._parent)
-        # We need to pass the lambda a weak reference to self to avoid circular
-        # reference.
         weak_self = weakref.ref(self)
         self.sensor.listen(lambda event: GnssSensor._on_gnss_event(weak_self, event))
 
@@ -606,12 +559,6 @@ class GnssSensor(object):
         self.lat = event.latitude
         self.lon = event.longitude
 
-
-# ==============================================================================
-# -- CameraManager -------------------------------------------------------------
-# ==============================================================================
-
-
 class CameraManager(object):
     def __init__(self, parent_actor, hud):
         self.sensor = None
@@ -622,7 +569,12 @@ class CameraManager(object):
         self._camera_transforms = [
             carla.Transform(carla.Location(x=-5.5, z=2.8), carla.Rotation(pitch=-15)),
             carla.Transform(carla.Location(x=1.6, z=1.7))]
-        self._transform_index = 1
+        
+        # ---------------------------------------------------------
+        # CHANGED: 0 defaults to 3rd person view!
+        # ---------------------------------------------------------
+        self._transform_index = 0
+        
         self._sensors = [
             ['sensor.camera.rgb', cc.Raw, 'Camera RGB'],
             ['sensor.camera.depth', cc.Raw, 'Camera Depth (Raw)'],
@@ -659,8 +611,6 @@ class CameraManager(object):
                 self._sensors[index][-1],
                 self._camera_transforms[self._transform_index],
                 attach_to=self._parent)
-            # We need to pass the lambda a weak reference to self to avoid
-            # circular reference.
             weak_self = weakref.ref(self)
             self.sensor.listen(lambda image: CameraManager._parse_image(weak_self, image))
         if notify:
@@ -706,11 +656,9 @@ class CameraManager(object):
         if self._recording:
             image.save_to_disk('_out/%08d' % image.frame_number)
 
-
 # ==============================================================================
 # -- game_loop() ---------------------------------------------------------------
 # ==============================================================================
-
 
 def game_loop(args):
     pygame.init()
@@ -735,21 +683,46 @@ def game_loop(args):
             if controller.parse_events(world, clock):
                 return
             world.tick(clock)
-            world.render(display)
+            
+            # ==========================================
+            # 🧠 EXERCISE 4: YOLO SEAMLESS INTEGRATION 
+            # ==========================================
+            
+            # 1. Render ONLY the raw camera feed first
+            world.camera_manager.render(display)
+
+            # 2. Capture the clean camera feed from the Pygame display
+            view = pygame.surfarray.array3d(display)
+            view = view.swapaxes(0, 1)
+            view = cv2.cvtColor(view, cv2.COLOR_RGB2BGR)
+
+            # 3. Process with YOLO in real time
+            results = model(view, verbose=False)
+            annotated_frame = results[0].plot()
+
+            # 4. Convert the AI image back to a Pygame format
+            annotated_frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+            annotated_surface = pygame.surfarray.make_surface(annotated_frame.swapaxes(0, 1))
+
+            # 5. Paste the AI image back over the raw camera feed
+            display.blit(annotated_surface, (0, 0))
+
+            # 6. Render the HUD text (speed, fps, etc.) ON TOP of the AI boxes
+            world.hud.render(display)
+
+            # 7. Update the screen for you to see!
             pygame.display.flip()
+            # ==========================================
 
     finally:
-
         if world is not None:
             world.destroy()
 
         pygame.quit()
 
-
 # ==============================================================================
 # -- main() --------------------------------------------------------------------
 # ==============================================================================
-
 
 def main():
     argparser = argparse.ArgumentParser(
@@ -796,13 +769,10 @@ def main():
     print(__doc__)
 
     try:
-
         game_loop(args)
-
     except KeyboardInterrupt:
         print('\nCancelled by user. Bye!')
 
 
 if __name__ == '__main__':
-
     main()
