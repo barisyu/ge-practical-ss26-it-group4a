@@ -3,10 +3,10 @@
 ## Project Information
 
 - **Practical Course:** [Title of the course]
-- **Lab name:** [Lab name]
-- **Date:** [DD.MM.YYYY]
+- **Lab name:** Informatik v50
+- **Date:** 27.04.2026
 - **Group Members:**  
-  - [Name 1]  
+  - Baris Yaksi
   - [Name 2]  
   - [Name 3]
   - [Name 4]
