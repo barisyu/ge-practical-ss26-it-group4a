@@ -2,7 +2,7 @@
 
 ## Project Information
 
-- **Practical Course:** General Enginnering Practicum 
+- **Practical Course:** General Enginnering Practice 
 - **Lab name:** Informatik v50
 - **Date:** 27.04.2026
 - **Group Members:**  
